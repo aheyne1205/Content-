@@ -1,381 +1,98 @@
 <title>Rebuild Notebook</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap">
 <style>
-/* Layout: one phone-first column. A loud dump box up top, a sortable library of film-ready pieces below. Red-earth ochre accent (Brisbane to Mount Isa). */
+/* Layout: one screen, one job. A big box, a big mic, one button. Red-earth ochre accent. */
 :root{
-  --bg:#141312; --surface:#1d1b19; --surface-2:#262320; --line:#38332e;
-  --fg:#efe9e2; --muted:#a39a90; --accent:#e07a2e; --accent-ink:#1a0f06;
-  --good:#6fbf73; --warn:#e3b341;
+  --bg:#141312; --surface:#1d1b19; --line:#38332e;
+  --fg:#efe9e2; --muted:#a39a90; --accent:#e07a2e; --accent-ink:#1a0f06; --good:#6fbf73; --warn:#e3b341;
   --display:"Anton","Impact","Arial Narrow",sans-serif;
   --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
   color-scheme:dark;
 }
 @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
-  --bg:#f6f2ed; --surface:#ffffff; --surface-2:#efe8e0; --line:#ddd3c8;
-  --fg:#1d1915; --muted:#6c6158; --accent:#b8561a; --accent-ink:#ffffff;
-  --good:#2f7d34; --warn:#9a6a00; color-scheme:light } }
+  --bg:#f6f2ed; --surface:#ffffff; --line:#ddd3c8; --fg:#1d1915; --muted:#6c6158;
+  --accent:#b8561a; --accent-ink:#ffffff; --good:#2f7d34; --warn:#9a6a00; color-scheme:light } }
 :root[data-theme="light"]{
-  --bg:#f6f2ed; --surface:#ffffff; --surface-2:#efe8e0; --line:#ddd3c8;
-  --fg:#1d1915; --muted:#6c6158; --accent:#b8561a; --accent-ink:#ffffff;
-  --good:#2f7d34; --warn:#9a6a00; color-scheme:light }
-
+  --bg:#f6f2ed; --surface:#ffffff; --line:#ddd3c8; --fg:#1d1915; --muted:#6c6158;
+  --accent:#b8561a; --accent-ink:#ffffff; --good:#2f7d34; --warn:#9a6a00; color-scheme:light }
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px}
-.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
-header{display:flex;flex-direction:column;gap:4px}
-h1{font-family:var(--display);font-weight:400;font-size:clamp(2.4rem,9vw,3.6rem);line-height:.95;letter-spacing:.01em;margin:0;text-transform:uppercase;text-wrap:balance}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px}
+.wrap{max-width:640px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,9vw,3.2rem);line-height:.95;margin:0;text-transform:uppercase}
 h1 span{color:var(--accent)}
-.sub{color:var(--muted);margin:0;max-width:60ch}
-.label{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line)}
-.tab{background:none;border:0;color:var(--muted);font:600 .95rem var(--body);padding:10px 14px;border-bottom:3px solid transparent;cursor:pointer;margin-bottom:-1px}
-.tab[aria-selected="true"]{color:var(--fg);border-color:var(--accent)}
-.tab .count{font-family:var(--mono);font-size:.75rem;color:var(--muted);margin-left:4px}
-button{font-family:var(--body)}
-button:focus-visible,textarea:focus-visible,select:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
-/* Dump */
-.dump{display:flex;flex-direction:column;gap:12px}
-.kinds{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:6px 12px;font:500 .85rem var(--body);cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.box{position:relative}
-textarea{width:100%;min-height:220px;resize:vertical;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:14px 14px 48px;font:400 1.05rem/1.55 var(--body)}
+textarea{flex:1;width:100%;min-height:260px;resize:none;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:16px;font:400 1.1rem/1.55 var(--body)}
 textarea::placeholder{color:var(--muted)}
-.partial{position:absolute;left:14px;right:70px;bottom:14px;color:var(--muted);font-style:italic;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mic{position:absolute;right:10px;bottom:10px;width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);cursor:pointer;display:grid;place-items:center}
+.partial{color:var(--muted);font-style:italic;min-height:1.5em;margin:-8px 0 0}
+.bar{display:flex;gap:12px;align-items:stretch}
+.mic{flex:0 0 64px;height:64px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;display:grid;place-items:center}
 .mic.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);animation:pulse 1.4s infinite}
-@keyframes pulse{50%{box-shadow:0 0 0 8px color-mix(in srgb,var(--accent) 25%,transparent)}}
+@keyframes pulse{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--accent) 25%,transparent)}}
 @media (prefers-reduced-motion:reduce){.mic.on{animation:none}}
-.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.btn{border:0;border-radius:6px;padding:12px 18px;font:700 1rem var(--body);cursor:pointer;background:var(--accent);color:var(--accent-ink)}
-.btn:disabled{opacity:.55;cursor:progress}
-.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line);font-weight:600}
-.btn.small{padding:7px 12px;font-size:.85rem}
-.status{color:var(--muted);font-size:.9rem}
-.status.err{color:var(--warn)}
-.notice{border:1px dashed var(--line);border-radius:6px;padding:10px 12px;color:var(--muted);font-size:.9rem}
-details.profile{border-top:1px solid var(--line);padding-top:14px}
-details.profile summary{cursor:pointer;font-weight:600}
-details.profile textarea{min-height:160px;margin-top:10px;font-size:.95rem;padding-bottom:14px}
-
-/* Library */
-.filters{display:flex;flex-direction:column;gap:10px}
-.row{display:flex;flex-wrap:wrap;gap:6px}
-.pieces{display:flex;flex-direction:column;gap:14px}
-.piece{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
-.piece[data-status="idea"]{border-left-color:var(--accent)}
-.piece[data-status="filmed"]{border-left-color:var(--warn)}
-.piece[data-status="posted"]{border-left-color:var(--good)}
-.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.pill{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--surface-2);color:var(--muted)}
-.pill.status-idea{color:var(--accent)} .pill.status-filmed{color:var(--warn)} .pill.status-posted{color:var(--good)}
-.hook{font-family:var(--display);font-weight:400;font-size:1.65rem;line-height:1.1;text-transform:uppercase;margin:0;text-wrap:balance}
-.section{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:10px;min-width:0}
-.section-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.copy{background:none;border:1px solid var(--line);color:var(--muted);border-radius:4px;font:600 .75rem var(--mono);padding:4px 8px;cursor:pointer}
-.copy.done{color:var(--good);border-color:var(--good)}
-.text{white-space:pre-wrap;margin:0;overflow-wrap:anywhere}
-ol.slides,ul.hooks{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
-.quote{font-family:var(--display);font-size:1.3rem;line-height:1.15;text-transform:uppercase;color:var(--accent);margin:0}
-.raw{font-size:.9rem;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
-.unsorted{background:var(--surface);border:1px dashed var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:10px}
-.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.9rem}
-.empty{color:var(--muted);text-align:center;padding:40px 12px;border:1px dashed var(--line);border-radius:6px}
-.lifeline{font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
-.lifeline strong{color:var(--fg);font-family:var(--mono)}
+.go{flex:1;border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);font:400 1.6rem var(--display);text-transform:uppercase;letter-spacing:.03em;cursor:pointer}
+.go:disabled{opacity:.55}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{text-align:center;color:var(--muted);min-height:1.5em;margin:0}
+.status.ok{color:var(--good)} .status.err{color:var(--warn)}
+.foot{text-align:center;font-size:.85rem;color:var(--muted);margin:0}
+.foot strong{color:var(--fg)}
 </style>
 
 <div class="wrap">
-  <header>
-    <span class="label">Brain dump → content</span>
-    <h1>The man I'm <span>becoming</span></h1>
-    <p class="sub">Talk or type it raw. Lessons, feelings, problems you solved, thoughts from the past. Hit sort and it becomes hooks, reel scripts, captions and carousels, still in your own words.</p>
-  </header>
-
-  <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tab-dump" aria-selected="true">Dump</button>
-    <button class="tab" role="tab" id="tab-lib" aria-selected="false">Library<span class="count" id="libCount"></span></button>
-  </nav>
-
-  <section id="view-dump" class="dump">
-    <div>
-      <span class="label">What is it?</span>
-      <div class="kinds" id="kinds"></div>
-    </div>
-    <div class="box">
-      <textarea id="dumpText" placeholder="e.g. Ran 10k this morning and all I could think about was the boys. Used to think I couldn't change..."></textarea>
-      <div class="partial" id="partial"></div>
-      <button class="mic" id="mic" hidden aria-label="Start talking" title="Talk instead of typing">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="none"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
-      </button>
-    </div>
-    <div class="actions">
-      <button class="btn" id="sortBtn">Sort into content</button>
-      <button class="btn ghost" id="saveRawBtn">Save raw for later</button>
-      <span class="status" id="status" role="status"></span>
-    </div>
-    <div class="notice" id="notice" hidden></div>
-    <details class="profile" id="profileBox">
-      <summary>My story &amp; voice (what Claude knows about you)</summary>
-      <p class="status">Every sort uses this. Add to it as you learn what lands.</p>
-      <textarea id="profileText" placeholder="Who you are, what you've been through, how you talk..."></textarea>
-      <div class="actions"><button class="btn ghost small" id="saveProfile">Save</button><span class="status" id="profileStatus"></span></div>
-    </details>
-  </section>
-
-  <section id="view-lib" hidden>
-    <div class="filters">
-      <div><span class="label">Pillar</span><div class="row" id="pillarFilter"></div></div>
-      <div><span class="label">Status</span><div class="row" id="statusFilter"></div></div>
-    </div>
-    <div class="pieces" id="pieces" style="margin-top:16px">
-      <div class="empty" id="loading">Loading your library…</div>
-    </div>
-  </section>
-
-  <p class="lifeline">Dark day? Call Lifeline on <strong>13 11 14</strong>, any time. Your boys need you here.</p>
+  <h1>Just <span>dump it.</span></h1>
+  <textarea id="t" placeholder="Whatever's in your head. What you learned, what you're feeling, what you overcame. Don't think, just go."></textarea>
+  <p class="partial" id="partial"></p>
+  <div class="bar">
+    <button class="mic" id="mic" hidden aria-label="Talk">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+    </button>
+    <button class="go" id="go">Dump it</button>
+  </div>
+  <p class="status" id="status" role="status"></p>
+  <p class="foot">Dark day? Call Lifeline on <strong>13 11 14</strong>. Your boys need you here.</p>
 </div>
 
 <script>
-const PILLARS=[
-  {id:"accountability",name:"Owning It"},
-  {id:"pit",name:"The Pit & Back"},
-  {id:"fatherhood",name:"Dad from 1,900km"},
-  {id:"discipline",name:"Training & Discipline"},
-  {id:"philosophy",name:"Philosophy"},
-  {id:"change",name:"People Can Change"},
-  {id:"empire",name:"Building the Empire"},
-  {id:"leadership",name:"Leading People"}
-];
-const PNAME=Object.fromEntries(PILLARS.map(p=>[p.id,p.name]));
-const KINDS=["Lesson learned","What I'm feeling","Problem → solution","Thought from the past","Something I read"];
-const STATUSES=[{id:"idea",name:"Idea"},{id:"filmed",name:"Filmed"},{id:"posted",name:"Posted"}];
-const NEXT={idea:"filmed",filmed:"posted",posted:"idea"};
-const DEFAULT_PROFILE="A man rebuilding his life after self-inflicted adversity. Raw, direct, first person.";
-
 const $=id=>document.getElementById(id);
-function el(tag,attrs={},...kids){const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==="class")n.className=v;else if(k==="text")n.textContent=v;else if(k.startsWith("on"))n.addEventListener(k.slice(2),v);else n.setAttribute(k,v)}for(const c of kids)if(c!=null)n.append(c);return n}
+const ta=$("t"),st=$("status");
 const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
+ta.value=store.get("draft")||"";
+ta.addEventListener("input",()=>store.set("draft",ta.value));
+function say(m,c){st.textContent=m;st.className="status"+(c?" "+c:"")}
+function append(x){x=x.trim();if(!x)return;ta.value=(ta.value&&!/\s$/.test(ta.value)?ta.value+" ":ta.value)+x;store.set("draft",ta.value)}
 
-let db=null,sample=null,dumps=[],profile=DEFAULT_PROFILE,localMode=false;
-let kind=null,fPillar="all",fStatus="all",confirmId=null;
+let db=null,waiting=null;
+function bank(){if(waiting!=null&&!st.textContent)say(waiting?`${waiting} dump${waiting>1?"s":""} in the bank.`:"")}
 
-/* ---------- tabs ---------- */
-function show(which){const lib=which==="lib";$("view-dump").hidden=lib;$("view-lib").hidden=!lib;$("tab-dump").setAttribute("aria-selected",!lib);$("tab-lib").setAttribute("aria-selected",lib);store.set("tab",which)}
-$("tab-dump").onclick=()=>show("dump");$("tab-lib").onclick=()=>show("lib");
-if(store.get("tab")==="lib")show("lib");
-
-/* ---------- kind chips ---------- */
-for(const k of KINDS){const b=el("button",{class:"chip","aria-pressed":"false",text:k});b.onclick=()=>{kind=kind===k?null:k;[...$("kinds").children].forEach(c=>c.setAttribute("aria-pressed",c.textContent===kind))};$("kinds").append(b)}
-
-/* ---------- draft ---------- */
-const ta=$("dumpText");ta.value=store.get("draft")||"";ta.addEventListener("input",()=>store.set("draft",ta.value));
-function append(t){t=t.trim();if(!t)return;ta.value=(ta.value&&!/\s$/.test(ta.value)?ta.value+" ":ta.value)+t;store.set("draft",ta.value)}
-
-/* ---------- filters ---------- */
-function renderFilters(){
-  const pf=$("pillarFilter");pf.replaceChildren();
-  for(const p of [{id:"all",name:"All"},...PILLARS]){const b=el("button",{class:"chip","aria-pressed":String(fPillar===p.id),text:p.name});b.onclick=()=>{fPillar=p.id;renderFilters();renderLib()};pf.append(b)}
-  const sf=$("statusFilter");sf.replaceChildren();
-  for(const s of [{id:"all",name:"All"},...STATUSES]){const b=el("button",{class:"chip","aria-pressed":String(fStatus===s.id),text:s.name});b.onclick=()=>{fStatus=s.id;renderFilters();renderLib()};sf.append(b)}
-}
-renderFilters();
-
-/* ---------- copy ---------- */
-function copyBtn(getText){const b=el("button",{class:"copy",text:"COPY"});b.onclick=()=>{const t=getText();const ok=()=>{b.textContent="COPIED";b.classList.add("done");setTimeout(()=>{b.textContent="COPY";b.classList.remove("done")},1500)};try{navigator.clipboard.writeText(t).then(ok,()=>fallback(b,t))}catch{fallback(b,t)}};return b}
-function fallback(b,t){const sec=b.closest(".section");const target=sec&&sec.querySelector(".text,.slides,.hooks,.quote");if(target){const r=document.createRange();r.selectNodeContents(target);const s=getSelection();s.removeAllRanges();s.addRange(r)}b.textContent="SELECTED";}
-function section(title,body,text){return el("div",{class:"section"},el("div",{class:"section-head"},el("span",{class:"label",text:title}),copyBtn(()=>text)),body)}
-
-/* ---------- library ---------- */
-function renderLib(){
-  const box=$("pieces");box.replaceChildren();
-  let total=0;
-  for(const d of dumps){
-    const ps=d.pieces||[];
-    total+=ps.length;
-    if(!ps.length){
-      if(fPillar!=="all"||(fStatus!=="all"&&fStatus!=="idea"))continue;
-      const u=el("div",{class:"unsorted"},
-        el("div",{class:"meta"},el("span",{class:"pill",text:"Unsorted"}),d.kind?el("span",{class:"pill",text:d.kind}):null,el("span",{class:"pill",text:fmtDate(d.createdAt)})),
-        el("p",{class:"raw",text:d.raw}));
-      const acts=el("div",{class:"actions"});
-      const sb=el("button",{class:"btn small",text:"Sort it now"});sb.onclick=()=>sortExisting(d,sb);
-      acts.append(sb,delControl(d));u.append(acts);box.append(u);continue;
-    }
-    ps.forEach((p,i)=>{
-      if(fPillar!=="all"&&p.pillar!==fPillar)return;
-      if(fStatus!=="all"&&p.status!==fStatus)return;
-      box.append(pieceCard(d,p,i));
-    });
-  }
-  $("libCount").textContent=total?String(total):"";
-  if(!box.children.length)box.append(el("div",{class:"empty",text:dumps.length?"Nothing matches these filters.":"No pieces yet. Dump something on the Dump tab and hit sort. It'll show up here ready to film."}));
-}
-function fmtDate(t){try{return new Date(t).toLocaleDateString("en-AU",{day:"numeric",month:"short"})}catch{return""}}
-function pieceCard(d,p,i){
-  const st=p.status||"idea";
-  const card=el("article",{class:"piece","data-status":st});
-  const stBtn=el("button",{class:"btn ghost small",text:"Mark "+STATUSES.find(s=>s.id===NEXT[st]).name.toLowerCase()});
-  stBtn.onclick=()=>setStatus(d,i,NEXT[st]);
-  card.append(
-    el("div",{class:"meta"},el("span",{class:"pill status-"+st,text:STATUSES.find(s=>s.id===st).name}),el("span",{class:"pill",text:PNAME[p.pillar]||p.pillar}),p.format?el("span",{class:"pill",text:p.format}):null,el("span",{class:"pill",text:fmtDate(d.createdAt)})),
-    el("h2",{class:"hook",text:(p.hooks&&p.hooks[0])||p.title||"Untitled"})
-  );
-  if(p.hooks&&p.hooks.length>1){const ul=el("ul",{class:"hooks"});p.hooks.slice(1).forEach(h=>ul.append(el("li",{text:h})));card.append(section("Other hooks",ul,p.hooks.join("\n")))}
-  if(p.script)card.append(section("Reel script (say it, don't read it)",el("p",{class:"text",text:p.script}),p.script));
-  if(p.caption){const cap=p.caption+(p.hashtags&&p.hashtags.length?"\n\n"+p.hashtags.map(h=>h.startsWith("#")?h:"#"+h).join(" "):"");card.append(section("Caption",el("p",{class:"text",text:cap}),cap))}
-  if(p.carousel&&p.carousel.length){const ol=el("ol",{class:"slides"});p.carousel.forEach(s=>ol.append(el("li",{text:s})));card.append(section("Carousel slides",ol,p.carousel.map((s,n)=>`Slide ${n+1}: ${s}`).join("\n")))}
-  if(p.quote)card.append(section("Quote card",el("p",{class:"quote",text:p.quote}),p.quote));
-  if(p.story)card.append(section("Story prompt",el("p",{class:"text",text:p.story}),p.story));
-  const raw=el("details",{},el("summary",{class:"label",text:"Original dump"}),el("p",{class:"raw",text:d.raw}));
-  card.append(el("div",{class:"section"},raw));
-  const acts=el("div",{class:"actions"});acts.append(stBtn,delControl(d));card.append(acts);
-  return card;
-}
-function delControl(d){
-  if(confirmId===d.id){
-    const c=el("span",{class:"confirm"},el("span",{text:"Delete this whole dump?"}));
-    const y=el("button",{class:"btn small",text:"Delete"});y.onclick=()=>{confirmId=null;remove(d)};
-    const n=el("button",{class:"btn ghost small",text:"Keep"});n.onclick=()=>{confirmId=null;renderLib()};
-    c.append(y,n);return c;
-  }
-  const b=el("button",{class:"btn ghost small",text:"Delete"});b.onclick=()=>{confirmId=d.id;renderLib()};return b;
-}
-
-/* ---------- persistence ---------- */
-async function saveDump(doc){
-  if(db&&!localMode){const ref=db.collection("dumps").doc();await ref.set(doc);return ref.id}
-  const id="local-"+Date.now();dumps.unshift({id,...doc});renderLib();return id;
-}
-async function setStatus(d,i,st){
-  const pieces=(d.pieces||[]).map((p,n)=>n===i?{...p,status:st}:{...p});
-  if(db&&!localMode){try{await db.doc("dumps/"+d.id).update({pieces})}catch(e){flash("Couldn't save that change: "+(e.message||e.code),true)}}
-  else{d.pieces=pieces;renderLib()}
-}
-async function remove(d){
-  if(db&&!localMode){try{await db.doc("dumps/"+d.id).delete()}catch(e){flash("Couldn't delete: "+(e.message||e.code),true)}}
-  else{dumps=dumps.filter(x=>x!==d);renderLib()}
-}
-
-/* ---------- Claude sorting ---------- */
-function buildPrompt(raw,k){
-  return `You turn one man's raw brain dumps into Instagram content. Keep HIS voice: raw, direct, first person, Australian, plain words. Swearing is fine if he swears. Do not polish it into corporate or guru-speak. No emojis. Never invent events, people or facts that aren't in the dump or his background. Reuse his own phrases wherever possible.
-
-HIS BACKGROUND (use for context only, don't dump it all into every piece):
-${profile}
-
-CONTENT PILLARS (pick the best fit by id):
-${PILLARS.map(p=>`- ${p.id}: ${p.name}`).join("\n")}
-
-SAFETY: if a piece touches suicide or self-harm, speak about surviving and hope, never describe methods, and end the caption with: "If you're in a dark place right now, call Lifeline on 13 11 14. Seriously. Make the call." Set "sensitive": true.
-
-The dump may hold one idea or several. Split it into 1-4 separate pieces, one clear idea each. For each piece:
-- hooks: 3 scroll-stopping opening lines (under 12 words, spoken in the first 2 seconds)
-- format: one of "Talking head reel", "Running/training reel", "Carousel", "Quote post"
-- script: a 30-60 second spoken reel script in short lines, written how he talks. Open with the hook, tell the moment, land the lesson, end with one line that hits.
-- caption: 60-150 words, raw, ends with a question or a challenge to the viewer
-- hashtags: 5-8 relevant tags without spaces
-- carousel: 5-7 short slide texts (slide 1 is a hook, last slide is a takeaway)
-- quote: one standalone line under 15 words for a quote card
-- story: one Instagram Story prompt or poll question tied to the idea
-
-Reply with only JSON in this shape:
-{"pieces":[{"title":"short internal title","pillar":"change","format":"Talking head reel","hooks":["",""],"script":"","caption":"","hashtags":["mindset"],"carousel":[""],"quote":"","story":"","sensitive":false}]}
-
-TYPE OF DUMP: ${k||"not specified"}
-
-THE DUMP:
-"""
-${raw}
-"""`;
-}
-function normalize(res){
-  const arr=Array.isArray(res)?res:(res&&Array.isArray(res.pieces)?res.pieces:[]);
-  const S=v=>typeof v==="string"?v.trim():"";const A=v=>Array.isArray(v)?v.map(S).filter(Boolean):[];
-  return arr.slice(0,6).map(p=>({
-    title:S(p.title),pillar:PNAME[p.pillar]?p.pillar:"change",format:S(p.format),
-    hooks:A(p.hooks),script:S(p.script),caption:S(p.caption),hashtags:A(p.hashtags).map(h=>h.replace(/\s+/g,"")),
-    carousel:A(p.carousel),quote:S(p.quote),story:S(p.story),sensitive:!!p.sensitive,status:"idea"
-  })).filter(p=>p.hooks.length||p.script||p.caption);
-}
-async function runSort(raw,k,onText){
-  const res=await sample.json(buildPrompt(raw,k),{modelTier:"default",onText});
-  const pieces=normalize(res);
-  if(!pieces.length)throw{code:"empty",message:"Claude came back with nothing usable. Try adding a bit more detail."};
-  return pieces;
-}
-function flash(msg,err){const s=$("status");s.textContent=msg;s.classList.toggle("err",!!err)}
-function errMsg(e){
-  const c=e&&e.code;
-  if(c==="not_granted")return"Claude isn't allowed on this page. Your dump is still here, so use \"Save raw for later\".";
-  if(c==="rate_limited")return"Too many sorts in a row. Give it a minute, or save it raw and sort later.";
-  if(c==="invalid_json")return"Claude's answer got scrambled. Hit sort again.";
-  return(e&&e.message)||"Something went wrong. Your words are still in the box.";
-}
-let busy=false;
-$("sortBtn").onclick=async()=>{
-  const raw=ta.value.trim();if(!raw){flash("Dump something first. Even one sentence works.",true);ta.focus();return}
-  if(!sample){flash("Sorting isn't available in this view. Save it raw for now.",true);return}
-  if(busy)return;busy=true;$("sortBtn").disabled=true;flash("Sorting… pulling the gold out of it");
+$("go").onclick=async()=>{
+  const raw=ta.value.trim();
+  if(!raw){say("Say something first. One line is enough.","err");ta.focus();return}
+  if(!db){say("Not saving here. Open this on claude.ai while signed in.","err");return}
+  $("go").disabled=true;
   try{
-    const pieces=await runSort(raw,kind,()=>flash("Writing it up…"));
-    await saveDump({raw,kind:kind||"",createdAt:Date.now(),pieces});
-    ta.value="";store.set("draft","");flash(`Done. ${pieces.length} piece${pieces.length>1?"s":""} added to your library.`);
-    fPillar="all";fStatus="all";renderFilters();show("lib");
-  }catch(e){flash(errMsg(e),true)}
-  finally{busy=false;$("sortBtn").disabled=false}
-};
-$("saveRawBtn").onclick=async()=>{
-  const raw=ta.value.trim();if(!raw){flash("Nothing to save yet.",true);return}
-  try{await saveDump({raw,kind:kind||"",createdAt:Date.now(),pieces:[]});ta.value="";store.set("draft","");flash("Saved raw. Sort it from the Library whenever you're ready.")}
-  catch(e){flash("Couldn't save: "+(e.message||e.code),true)}
-};
-async function sortExisting(d,btn){
-  if(!sample){flash("Sorting isn't available in this view.",true);return}
-  btn.disabled=true;btn.textContent="Sorting…";
-  try{const pieces=await runSort(d.raw,d.kind);if(db&&!localMode)await db.doc("dumps/"+d.id).update({pieces});else{d.pieces=pieces;renderLib()}}
-  catch(e){btn.disabled=false;btn.textContent="Sort it now";alertInline(btn,errMsg(e))}
-}
-function alertInline(btn,msg){const s=el("span",{class:"status err",text:msg});btn.after(s)}
-
-/* ---------- profile ---------- */
-$("saveProfile").onclick=async()=>{
-  const v=$("profileText").value.trim();profile=v||DEFAULT_PROFILE;
-  if(db&&!localMode){try{await db.doc("settings/profile").set({text:v,updatedAt:Date.now()});$("profileStatus").textContent="Saved."}catch(e){$("profileStatus").textContent="Couldn't save: "+(e.message||e.code)}}
-  else{store.set("profile",v);$("profileStatus").textContent="Saved on this device."}
+    await db.collection("dumps").doc().set({raw,createdAt:Date.now(),sorted:false});
+    ta.value="";store.set("draft","");say("Saved. Go live your day.","ok");
+    setTimeout(()=>{st.textContent="";bank()},4000);
+  }catch(e){say("Didn't save: "+(e.message||e.code)+". Your words are still in the box.","err")}
+  finally{$("go").disabled=false}
 };
 
-/* ---------- boot ---------- */
-function goLocal(why){
-  localMode=true;const n=$("notice");n.hidden=false;n.textContent=why;
-  const p=store.get("profile");if(p){profile=p;$("profileText").value=p}
-  renderLib();
-}
 (async()=>{
   const use=window.claude&&window.claude.use;
-  if(!use){goLocal("Open this page on claude.ai to save your library and sort with Claude. Right now nothing is saved.");return}
-  const [dbNs,sNs,dict]=await Promise.all([use("db"),use("sample"),use("dictation")]);
-  sample=sNs;
-  if(!sample)$("sortBtn").title="Sorting isn't available in this view";
+  if(!use){say("Open this on claude.ai to save your dumps.","err");return}
+  const [dbNs,dict]=await Promise.all([use("db"),use("dictation")]);
   if(dict){
-    let listening=false;const mic=$("mic");mic.hidden=false;
+    let on=false;const mic=$("mic");mic.hidden=false;
     dict.onPartial(({text})=>{$("partial").textContent=text});
     dict.onFinal(({text})=>{$("partial").textContent="";append(text)});
-    dict.onState(({state})=>{listening=state==="listening";mic.classList.toggle("on",listening);mic.setAttribute("aria-label",listening?"Stop talking":"Start talking");if(!listening)$("partial").textContent=""});
-    mic.onclick=()=>{if(listening){dict.stop().catch(()=>{})}else{dict.start().catch(e=>{if(e&&e.code==="not_granted")mic.hidden=true})}};
+    dict.onState(({state})=>{on=state==="listening";mic.classList.toggle("on",on);mic.setAttribute("aria-label",on?"Stop":"Talk");if(!on)$("partial").textContent=""});
+    mic.onclick=()=>{if(on)dict.stop().catch(()=>{});else dict.start().catch(e=>{if(e&&e.code==="not_granted")mic.hidden=true})};
   }
-  if(!dbNs){goLocal("Sign in on claude.ai to keep your library. Anything you sort now disappears when you close the page.");return}
+  if(!dbNs){say("Sign in on claude.ai to save your dumps.","err");return}
   db=dbNs;
-  db.doc("settings/profile").get().then(s=>{const t=s.exists&&s.data().text;if(t){profile=t;$("profileText").value=t}}).catch(()=>{});
-  const timer=setTimeout(()=>{if(!dumps.length)$("loading")&&($("loading").textContent="Still loading. Check your connection.")},10000);
-  db.collection("dumps").orderBy("createdAt","desc").onSnapshot(snap=>{
-    clearTimeout(timer);
-    dumps=snap.docs.map(d=>({id:d.id,...d.data()}));renderLib();
-  },e=>{clearTimeout(timer);$("pieces").replaceChildren(el("div",{class:"empty",text:"Couldn't load your library: "+(e.message||e.code)}))});
+  db.collection("dumps").where("sorted","==",false).onSnapshot(s=>{waiting=s.size;bank()},()=>{});
 })();
 </script>
