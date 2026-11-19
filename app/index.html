@@ -66,6 +66,12 @@ ol,ul{margin:0;padding-left:1.3em}
 .del{align-self:flex-start;background:none;border:0;color:var(--muted);font-size:.8rem;text-decoration:underline;cursor:pointer;padding:0}
 .confirm{display:flex;gap:10px;align-items:center;font-size:.85rem;flex-wrap:wrap}
 .confirm button{border-radius:4px;padding:5px 10px;font:600 .8rem var(--body);cursor:pointer;border:1px solid var(--line);background:var(--surface-2);color:var(--fg)}
+.acts{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.edit{display:flex;flex-direction:column;gap:8px}
+.edit textarea{min-height:180px;font-size:1rem}
+.edit textarea.note{min-height:80px}
+.btn.solid{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border-color:var(--line);color:var(--fg)}
 .foot{text-align:center;font-size:.85rem;color:var(--muted);margin:8px 0 0}
 .foot strong{color:var(--fg)}
 </style>
@@ -103,6 +109,31 @@ function append(x){x=x.trim();if(!x)return;ta.value=(ta.value&&!/\s$/.test(ta.va
 function when(t){try{return new Date(t).toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"})}catch{return""}}
 
 let db=null,sample=null,dumps=[],profile="",confirmId=null,sorting=false;
+let editingId=null,edit={id:null,raw:"",note:""};
+function editEl(d){
+  if(edit.id!==d.id)edit={id:d.id,raw:d.raw||"",note:d.note||""};
+  const t=el("textarea",{id:"edit-raw","aria-label":"Your words"});t.value=edit.raw;t.oninput=()=>edit.raw=t.value;
+  const n=el("textarea",{id:"edit-note",class:"note",placeholder:"Anything to change? e.g. less about her, more about what I was going through"});n.value=edit.note;n.oninput=()=>edit.note=n.value;
+  const save=el("button",{class:"btn solid",text:"Save & re-sort"}),cancel=el("button",{class:"btn ghost",text:"Cancel"});
+  save.onclick=()=>resort(d,save);cancel.onclick=()=>{editingId=null;render()};
+  return el("div",{class:"edit"},el("span",{class:"label",text:"Your words"}),t,el("span",{class:"label",text:"Notes for Claude (optional)"}),n,el("div",{class:"bar"},save,cancel));
+}
+async function resort(d,btn){
+  const raw=edit.raw.trim(),note=edit.note.trim();
+  if(!raw){say("The dump can't be empty.","err");return}
+  btn.disabled=true;
+  try{
+    if(!sample){
+      await db.doc("dumps/"+d.id).update({raw,note,sorted:false,pieces:[]});
+      editingId=null;render();say("Saved. Tell Claude \"sort my dumps\" to redo it.","ok");return;
+    }
+    btn.textContent="Re-sorting…";
+    const pieces=clean(await sample.json(prompt(raw,note),{modelTier:"default"}));
+    if(!pieces.length)throw{message:"came back empty"};
+    await db.doc("dumps/"+d.id).update({raw,note,pieces,sorted:true,sortedAt:Date.now()});
+    editingId=null;render();say("Re-sorted. Tap a hook to check it.","ok");
+  }catch(e){btn.disabled=false;btn.textContent="Save & re-sort";say(e&&e.code==="rate_limited"?"Claude needs a breather. Try again in a minute.":"Couldn't re-sort that. Your edits are still here, try again.","err")}
+}
 
 /* ---------- list ---------- */
 function copyBtn(text,target){const b=el("button",{class:"copy",text:"COPY"});b.onclick=()=>{const ok=()=>{b.textContent="COPIED";b.classList.add("done");setTimeout(()=>{b.textContent="COPY";b.classList.remove("done")},1500)};const fb=()=>{const r=document.createRange();r.selectNodeContents(target);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent="SELECTED"};try{navigator.clipboard.writeText(text).then(ok,fb)}catch{fb()}};return b}
@@ -143,9 +174,12 @@ function render(){
     const card=el("article",{class:"dump "+(d.sorted?"sorted":"waiting")},
       el("div",{class:"meta"},el("span",{class:"pill",text:when(d.createdAt)}),
         d.sorted?el("span",{class:"pill done",text:ps.length?`${ps.length} piece${ps.length>1?"s":""} ready`:"Sorted"}):el("span",{class:"pill wait",text:"Waiting to sort"})),
-      el("p",{class:"raw",text:d.raw}));
-    ps.forEach(p=>card.append(pieceEl(p)));
-    card.append(delEl(d));
+      editingId===d.id?editEl(d):el("p",{class:"raw",text:d.raw}));
+    if(editingId!==d.id){
+      ps.forEach(p=>card.append(pieceEl(p)));
+      const eb=el("button",{class:"del",text:"Edit"});eb.onclick=()=>{editingId=d.id;confirmId=null;render()};
+      card.append(el("div",{class:"acts"},eb,delEl(d)));
+    }
     list.append(card);
   }
 }
@@ -162,8 +196,10 @@ $("go").onclick=async()=>{
 };
 
 /* ---------- sort ---------- */
-function prompt(raw){
+function prompt(raw,note){
   return `You turn one man's raw brain dumps into Instagram content. Keep HIS voice: raw, direct, first person, Australian, plain words. Keep his swearing if he swears. No guru-speak, no emojis, never invent events or facts. Reuse his own phrases.
+
+FRAMING: make it about the internal experience, what he felt, thought and learned, so anyone going through something similar sees themselves in it. Never aim it at or blame one specific person. If the dump is about a particular man or woman, generalise them ("someone", "the person you're into", "they") so both men and women relate. Talk to the viewer who is feeling this way right now.
 
 HIS BACKGROUND (context only):
 ${profile||"A man rebuilding his life after self-inflicted adversity."}
@@ -178,7 +214,7 @@ hooks (3 opening lines under 12 words), format ("Talking head reel" | "Running/t
 Reply with only JSON:
 {"pieces":[{"title":"","pillar":"people-can-change","format":"","hooks":[""],"script":"","caption":"","hashtags":[""],"carousel":[""],"quote":"","story":""}]}
 
-THE DUMP:
+${note?`HIS NOTES ON WHAT TO CHANGE (follow these):\n${note}\n\n`:""}THE DUMP:
 """
 ${raw}
 """`;
@@ -196,7 +232,7 @@ $("sortAll").onclick=async()=>{
   for(const d of todo){
     b.textContent=`Sorting ${done+1} of ${todo.length}…`;
     try{
-      const pieces=clean(await sample.json(prompt(d.raw),{modelTier:"default"}));
+      const pieces=clean(await sample.json(prompt(d.raw,d.note),{modelTier:"default"}));
       if(!pieces.length)throw{message:"came back empty"};
       await db.doc("dumps/"+d.id).update({pieces,sorted:true,sortedAt:Date.now()});done++;
     }catch(e){

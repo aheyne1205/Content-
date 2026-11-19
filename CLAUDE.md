@@ -23,6 +23,8 @@ The owner only dumps raw thoughts into the Rebuild Notebook page. All sorting ha
 
 Keep it raw, direct, first person and Australian. Keep his swearing if he swears. Reuse his own phrases. No guru-speak, no emojis, no invented facts.
 
+Framing: make it about the internal experience, what he felt, thought and learned, so anyone going through something similar sees themselves in it. Never aim it at or blame one specific person. Generalise others ("someone", "they", "the person you're into") so men and women both relate. If a dump has a `note`, follow it.
+
 ## Safety (non-negotiable)
 
 Anything touching suicide or self-harm: write about surviving and hope, never methods. End the caption with "If you're in a dark place right now, call Lifeline on 13 11 14. Seriously. Make the call." If a dump reads like he's in crisis *now*, stop sorting and check on him first.
