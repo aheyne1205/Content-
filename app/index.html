@@ -83,7 +83,7 @@ ol,ul{margin:0;padding-left:1.3em}
   <p class="status" id="status" role="status"></p>
 
   <div class="list-head"><h2>Your dumps</h2><span class="count" id="count"></span></div>
-  <button class="btn" id="sortAll" hidden>Sort them for me</button>
+  <button class="btn" id="sortAll">Sort them for me</button>
   <div class="list" id="list"><p class="empty">Loading your dumps…</p></div>
 
   <p class="foot">Dark day? Call Lifeline on <strong>13 11 14</strong>. Your boys need you here.</p>
@@ -135,8 +135,8 @@ function render(){
   const list=$("list");list.replaceChildren();
   const waiting=dumps.filter(d=>!d.sorted).length;
   $("count").textContent=dumps.length?`${dumps.length} saved · ${waiting} waiting`:"";
-  $("sortAll").hidden=!(waiting&&sample);
-  if(!sorting)$("sortAll").textContent=waiting>1?`Sort all ${waiting} for me`:"Sort it for me";
+  const sb=$("sortAll");sb.hidden=false;
+  if(!sorting){sb.disabled=!waiting;sb.textContent=!waiting?"All sorted. Dump something new.":waiting>1?`Sort all ${waiting} for me`:"Sort it for me"}
   if(!dumps.length){list.append(el("p",{class:"empty",text:"Nothing here yet. Your first dump shows up right here."}));return}
   for(const d of dumps){
     const ps=Array.isArray(d.pieces)?d.pieces:[];
@@ -189,7 +189,8 @@ function clean(res){
   return arr.slice(0,4).map(p=>({title:S(p.title),pillar:PILLARS[p.pillar]?p.pillar:"people-can-change",format:S(p.format),hooks:A(p.hooks),script:S(p.script),caption:S(p.caption),hashtags:A(p.hashtags).map(h=>h.replace(/\s+/g,"")),carousel:A(p.carousel),quote:S(p.quote),story:S(p.story)})).filter(p=>p.hooks.length||p.script);
 }
 $("sortAll").onclick=async()=>{
-  if(sorting||!sample)return;
+  if(sorting)return;
+  if(!sample){say("Sorting doesn't work in this app. Open the link in Chrome, or tell Claude \"sort my dumps\".","err");return}
   const todo=dumps.filter(d=>!d.sorted);if(!todo.length)return;
   sorting=true;const b=$("sortAll");b.disabled=true;let done=0;
   for(const d of todo){
