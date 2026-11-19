@@ -2,8 +2,9 @@
 
 The owner only dumps raw thoughts into the Rebuild Notebook page. All sorting happens here. Keep his side dead simple.
 
-- Page: https://claude.ai/artifact/DvufVb7XNUjkStZvAfNpNL (source `app/index.html`). Don't add features to it without being asked. One box, one mic, one button.
-- Dumps live in the page's database, collection `dumps`: `{raw, createdAt, sorted}`.
+- Page: https://claude.ai/artifact/DvufVb7XNUjkStZvAfNpNL (source `app/index.html`). Don't add features to it without being asked. It's one screen: a box, a mic, a Dump it button, then his dumps listed underneath with a "Sort them for me" button.
+- Dumps live in the page's database, collection `dumps`: `{raw, createdAt, sorted, pieces?}`. The page's sort button writes `pieces` (hooks, script, caption, hashtags, carousel, quote, story, pillar, format) and sets `sorted: true`.
+- A back-end sort below does the same job from a session. When you do it, also write the `pieces` array onto the dump so he sees it on his phone.
 - His story and voice live in `settings/profile` (`text`). Read it before writing anything.
 
 ## When he says "sort my dumps" (or similar)

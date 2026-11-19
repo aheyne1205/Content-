@@ -1,43 +1,72 @@
 <title>Rebuild Notebook</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: one screen, one job. A big box, a big mic, one button. Red-earth ochre accent. */
+/* Layout: one scrolling column. Dump box and button on top, your dumps underneath, newest first. Red-earth ochre accent. */
 :root{
-  --bg:#141312; --surface:#1d1b19; --line:#38332e;
+  --bg:#141312; --surface:#1d1b19; --surface-2:#262320; --line:#38332e;
   --fg:#efe9e2; --muted:#a39a90; --accent:#e07a2e; --accent-ink:#1a0f06; --good:#6fbf73; --warn:#e3b341;
   --display:"Anton","Impact","Arial Narrow",sans-serif;
   --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   color-scheme:dark;
 }
 @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
-  --bg:#f6f2ed; --surface:#ffffff; --line:#ddd3c8; --fg:#1d1915; --muted:#6c6158;
+  --bg:#f6f2ed; --surface:#ffffff; --surface-2:#efe8e0; --line:#ddd3c8; --fg:#1d1915; --muted:#6c6158;
   --accent:#b8561a; --accent-ink:#ffffff; --good:#2f7d34; --warn:#9a6a00; color-scheme:light } }
 :root[data-theme="light"]{
-  --bg:#f6f2ed; --surface:#ffffff; --line:#ddd3c8; --fg:#1d1915; --muted:#6c6158;
+  --bg:#f6f2ed; --surface:#ffffff; --surface-2:#efe8e0; --line:#ddd3c8; --fg:#1d1915; --muted:#6c6158;
   --accent:#b8561a; --accent-ink:#ffffff; --good:#2f7d34; --warn:#9a6a00; color-scheme:light }
 *{box-sizing:border-box}
-html,body{height:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;margin:0;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px}
-.wrap{max-width:640px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:16px}
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,9vw,3.2rem);line-height:.95;margin:0;text-transform:uppercase}
 h1 span{color:var(--accent)}
-textarea{flex:1;width:100%;min-height:260px;resize:none;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:16px;font:400 1.1rem/1.55 var(--body)}
+h2{font-family:var(--display);font-weight:400;font-size:1.6rem;text-transform:uppercase;margin:0}
+textarea{width:100%;min-height:200px;resize:vertical;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:16px;font:400 1.1rem/1.55 var(--body)}
 textarea::placeholder{color:var(--muted)}
 .partial{color:var(--muted);font-style:italic;min-height:1.5em;margin:-8px 0 0}
-.bar{display:flex;gap:12px;align-items:stretch}
+.bar{display:flex;gap:12px}
 .mic{flex:0 0 64px;height:64px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;display:grid;place-items:center}
 .mic.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);animation:pulse 1.4s infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--accent) 25%,transparent)}}
 @media (prefers-reduced-motion:reduce){.mic.on{animation:none}}
-.go{flex:1;border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);font:400 1.6rem var(--display);text-transform:uppercase;letter-spacing:.03em;cursor:pointer}
-.go:disabled{opacity:.55}
-button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.go{flex:1;border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);font:400 1.6rem var(--display);text-transform:uppercase;letter-spacing:.03em;cursor:pointer;min-height:64px}
+.go:disabled,.btn:disabled{opacity:.55}
+.btn{border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:8px;padding:12px 16px;font:700 1rem var(--body);cursor:pointer;width:100%}
+button:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .status{text-align:center;color:var(--muted);min-height:1.5em;margin:0}
 .status.ok{color:var(--good)} .status.err{color:var(--warn)}
-.foot{text-align:center;font-size:.85rem;color:var(--muted);margin:0}
+.list-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-top:1px solid var(--line);padding-top:20px;margin-top:8px}
+.count{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:12px}
+.dump{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.dump.waiting{border-style:dashed}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pill{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--surface-2);color:var(--muted)}
+.pill.wait{color:var(--warn)} .pill.done{color:var(--good)}
+.raw{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.dump.sorted > .raw{color:var(--muted);font-size:.9rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+details.piece{border-top:1px solid var(--line);padding-top:10px}
+details.piece summary{cursor:pointer;list-style:none;display:flex;flex-direction:column;gap:4px}
+details.piece summary::-webkit-details-marker{display:none}
+.hook{font-family:var(--display);font-size:1.35rem;line-height:1.1;text-transform:uppercase}
+.tap{font-size:.8rem;color:var(--accent)}
+details[open] .tap{display:none}
+.sec{display:flex;flex-direction:column;gap:4px;margin-top:12px;min-width:0}
+.sec-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.label{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.copy{background:none;border:1px solid var(--line);color:var(--muted);border-radius:4px;font:600 .72rem var(--mono);padding:4px 8px;cursor:pointer}
+.copy.done{color:var(--good);border-color:var(--good)}
+.text{white-space:pre-wrap;margin:0;overflow-wrap:anywhere}
+ol,ul{margin:0;padding-left:1.3em}
+.empty{color:var(--muted);text-align:center;padding:28px 12px;border:1px dashed var(--line);border-radius:8px;margin:0}
+.del{align-self:flex-start;background:none;border:0;color:var(--muted);font-size:.8rem;text-decoration:underline;cursor:pointer;padding:0}
+.confirm{display:flex;gap:10px;align-items:center;font-size:.85rem;flex-wrap:wrap}
+.confirm button{border-radius:4px;padding:5px 10px;font:600 .8rem var(--body);cursor:pointer;border:1px solid var(--line);background:var(--surface-2);color:var(--fg)}
+.foot{text-align:center;font-size:.85rem;color:var(--muted);margin:8px 0 0}
 .foot strong{color:var(--fg)}
 </style>
 
@@ -52,38 +81,138 @@ button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
     <button class="go" id="go">Dump it</button>
   </div>
   <p class="status" id="status" role="status"></p>
+
+  <div class="list-head"><h2>Your dumps</h2><span class="count" id="count"></span></div>
+  <button class="btn" id="sortAll" hidden>Sort them for me</button>
+  <div class="list" id="list"><p class="empty">Loading your dumps…</p></div>
+
   <p class="foot">Dark day? Call Lifeline on <strong>13 11 14</strong>. Your boys need you here.</p>
 </div>
 
 <script>
+const PILLARS={"owning-it":"Owning It","pit-and-back":"The Pit & Back","dad-from-1900km":"Dad from 1,900km","training-discipline":"Training & Discipline","philosophy":"Philosophy","people-can-change":"People Can Change","building-the-empire":"Building the Empire","leading-people":"Leading People"};
+const OLD={accountability:"owning-it",pit:"pit-and-back",fatherhood:"dad-from-1900km",discipline:"training-discipline",change:"people-can-change",empire:"building-the-empire",leadership:"leading-people"};
 const $=id=>document.getElementById(id);
-const ta=$("t"),st=$("status");
+function el(tag,a={},...kids){const n=document.createElement(tag);for(const[k,v]of Object.entries(a)){if(k==="class")n.className=v;else if(k==="text")n.textContent=v;else n.setAttribute(k,v)}for(const c of kids)if(c!=null)n.append(c);return n}
 const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
+const ta=$("t"),st=$("status");
 ta.value=store.get("draft")||"";
 ta.addEventListener("input",()=>store.set("draft",ta.value));
 function say(m,c){st.textContent=m;st.className="status"+(c?" "+c:"")}
 function append(x){x=x.trim();if(!x)return;ta.value=(ta.value&&!/\s$/.test(ta.value)?ta.value+" ":ta.value)+x;store.set("draft",ta.value)}
+function when(t){try{return new Date(t).toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"})}catch{return""}}
 
-let db=null,waiting=null;
-function bank(){if(waiting!=null&&!st.textContent)say(waiting?`${waiting} dump${waiting>1?"s":""} in the bank.`:"")}
+let db=null,sample=null,dumps=[],profile="",confirmId=null,sorting=false;
 
+/* ---------- list ---------- */
+function copyBtn(text,target){const b=el("button",{class:"copy",text:"COPY"});b.onclick=()=>{const ok=()=>{b.textContent="COPIED";b.classList.add("done");setTimeout(()=>{b.textContent="COPY";b.classList.remove("done")},1500)};const fb=()=>{const r=document.createRange();r.selectNodeContents(target);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent="SELECTED"};try{navigator.clipboard.writeText(text).then(ok,fb)}catch{fb()}};return b}
+function sec(title,body,text){return el("div",{class:"sec"},el("div",{class:"sec-head"},el("span",{class:"label",text:title}),copyBtn(text,body)),body)}
+function listOf(tag,items){const l=el(tag);items.forEach(i=>l.append(el("li",{text:i})));return l}
+function pieceEl(p){
+  const pillar=PILLARS[p.pillar]||PILLARS[OLD[p.pillar]]||"";
+  const d=el("details",{class:"piece"},el("summary",{},
+    el("span",{class:"meta"},pillar?el("span",{class:"pill",text:pillar}):null,p.format?el("span",{class:"pill",text:p.format}):null),
+    el("span",{class:"hook",text:(p.hooks&&p.hooks[0])||p.title||"Untitled"}),
+    el("span",{class:"tap",text:"Tap for script, caption & more"})));
+  if(p.hooks&&p.hooks.length>1)d.append(sec("Other hooks",listOf("ul",p.hooks.slice(1)),p.hooks.join("\n")));
+  if(p.script)d.append(sec("Reel script",el("p",{class:"text",text:p.script}),p.script));
+  if(p.caption){const c=p.caption+(p.hashtags&&p.hashtags.length?"\n\n"+p.hashtags.map(h=>h[0]==="#"?h:"#"+h).join(" "):"");d.append(sec("Caption",el("p",{class:"text",text:c}),c))}
+  if(p.carousel&&p.carousel.length)d.append(sec("Carousel slides",listOf("ol",p.carousel),p.carousel.map((s,i)=>`Slide ${i+1}: ${s}`).join("\n")));
+  if(p.quote)d.append(sec("Quote card",el("p",{class:"text",text:p.quote}),p.quote));
+  if(p.story)d.append(sec("Story prompt",el("p",{class:"text",text:p.story}),p.story));
+  return d;
+}
+function delEl(d){
+  if(confirmId===d.id){
+    const y=el("button",{text:"Delete"}),n=el("button",{text:"Keep"});
+    y.onclick=async()=>{confirmId=null;try{await db.doc("dumps/"+d.id).delete()}catch(e){say("Couldn't delete: "+(e.message||e.code),"err");render()}};
+    n.onclick=()=>{confirmId=null;render()};
+    return el("div",{class:"confirm"},el("span",{text:"Delete this dump for good?"}),y,n);
+  }
+  const b=el("button",{class:"del",text:"Delete"});b.onclick=()=>{confirmId=d.id;render()};return b;
+}
+function render(){
+  const list=$("list");list.replaceChildren();
+  const waiting=dumps.filter(d=>!d.sorted).length;
+  $("count").textContent=dumps.length?`${dumps.length} saved · ${waiting} waiting`:"";
+  $("sortAll").hidden=!(waiting&&sample);
+  if(!sorting)$("sortAll").textContent=waiting>1?`Sort all ${waiting} for me`:"Sort it for me";
+  if(!dumps.length){list.append(el("p",{class:"empty",text:"Nothing here yet. Your first dump shows up right here."}));return}
+  for(const d of dumps){
+    const ps=Array.isArray(d.pieces)?d.pieces:[];
+    const card=el("article",{class:"dump "+(d.sorted?"sorted":"waiting")},
+      el("div",{class:"meta"},el("span",{class:"pill",text:when(d.createdAt)}),
+        d.sorted?el("span",{class:"pill done",text:ps.length?`${ps.length} piece${ps.length>1?"s":""} ready`:"Sorted"}):el("span",{class:"pill wait",text:"Waiting to sort"})),
+      el("p",{class:"raw",text:d.raw}));
+    ps.forEach(p=>card.append(pieceEl(p)));
+    card.append(delEl(d));
+    list.append(card);
+  }
+}
+
+/* ---------- save ---------- */
 $("go").onclick=async()=>{
   const raw=ta.value.trim();
   if(!raw){say("Say something first. One line is enough.","err");ta.focus();return}
   if(!db){say("Not saving here. Open this on claude.ai while signed in.","err");return}
   $("go").disabled=true;
-  try{
-    await db.collection("dumps").doc().set({raw,createdAt:Date.now(),sorted:false});
-    ta.value="";store.set("draft","");say("Saved. Go live your day.","ok");
-    setTimeout(()=>{st.textContent="";bank()},4000);
-  }catch(e){say("Didn't save: "+(e.message||e.code)+". Your words are still in the box.","err")}
+  try{await db.collection("dumps").doc().set({raw,createdAt:Date.now(),sorted:false});ta.value="";store.set("draft","");say("Saved. It's in your list below.","ok");setTimeout(()=>say(""),4000)}
+  catch(e){say("Didn't save: "+(e.message||e.code)+". Your words are still in the box.","err")}
   finally{$("go").disabled=false}
 };
 
+/* ---------- sort ---------- */
+function prompt(raw){
+  return `You turn one man's raw brain dumps into Instagram content. Keep HIS voice: raw, direct, first person, Australian, plain words. Keep his swearing if he swears. No guru-speak, no emojis, never invent events or facts. Reuse his own phrases.
+
+HIS BACKGROUND (context only):
+${profile||"A man rebuilding his life after self-inflicted adversity."}
+
+PILLARS (pick one id): ${Object.keys(PILLARS).join(", ")}
+
+SAFETY: if it touches suicide or self-harm, speak about surviving and hope, never methods, and end the caption with: "If you're in a dark place right now, call Lifeline on 13 11 14. Seriously. Make the call."
+
+Split the dump into 1-4 pieces, one clear idea each. Each piece:
+hooks (3 opening lines under 12 words), format ("Talking head reel" | "Running/training reel" | "Carousel" | "Quote post"), script (30-60s spoken, short lines: hook, the moment, the lesson, a closing line that hits), caption (60-150 words, ends with a question or challenge), hashtags (5-8, no spaces), carousel (5-7 short slides), quote (under 15 words), story (one Story prompt or poll).
+
+Reply with only JSON:
+{"pieces":[{"title":"","pillar":"people-can-change","format":"","hooks":[""],"script":"","caption":"","hashtags":[""],"carousel":[""],"quote":"","story":""}]}
+
+THE DUMP:
+"""
+${raw}
+"""`;
+}
+function clean(res){
+  const arr=res&&Array.isArray(res.pieces)?res.pieces:Array.isArray(res)?res:[];
+  const S=v=>typeof v==="string"?v.trim():"",A=v=>Array.isArray(v)?v.map(S).filter(Boolean):[];
+  return arr.slice(0,4).map(p=>({title:S(p.title),pillar:PILLARS[p.pillar]?p.pillar:"people-can-change",format:S(p.format),hooks:A(p.hooks),script:S(p.script),caption:S(p.caption),hashtags:A(p.hashtags).map(h=>h.replace(/\s+/g,"")),carousel:A(p.carousel),quote:S(p.quote),story:S(p.story)})).filter(p=>p.hooks.length||p.script);
+}
+$("sortAll").onclick=async()=>{
+  if(sorting||!sample)return;
+  const todo=dumps.filter(d=>!d.sorted);if(!todo.length)return;
+  sorting=true;const b=$("sortAll");b.disabled=true;let done=0;
+  for(const d of todo){
+    b.textContent=`Sorting ${done+1} of ${todo.length}…`;
+    try{
+      const pieces=clean(await sample.json(prompt(d.raw),{modelTier:"default"}));
+      if(!pieces.length)throw{message:"came back empty"};
+      await db.doc("dumps/"+d.id).update({pieces,sorted:true,sortedAt:Date.now()});done++;
+    }catch(e){
+      sorting=false;b.disabled=false;render();
+      say(e&&e.code==="rate_limited"?"Claude needs a breather. Try again in a minute.":e&&e.code==="not_granted"?"Claude isn't allowed on this page. Allow it in the page's permissions.":"Got stuck on one dump. Hit sort again.","err");
+      return;
+    }
+  }
+  sorting=false;b.disabled=false;render();say(`Done. ${done} sorted. Tap any hook below to see the full thing.`,"ok");
+};
+
+/* ---------- boot ---------- */
 (async()=>{
   const use=window.claude&&window.claude.use;
-  if(!use){say("Open this on claude.ai to save your dumps.","err");return}
-  const [dbNs,dict]=await Promise.all([use("db"),use("dictation")]);
+  if(!use){$("list").replaceChildren(el("p",{class:"empty",text:"Open this on claude.ai to see your dumps."}));return}
+  const [dbNs,sNs,dict]=await Promise.all([use("db"),use("sample"),use("dictation")]);
+  sample=sNs;
   if(dict){
     let on=false;const mic=$("mic");mic.hidden=false;
     dict.onPartial(({text})=>{$("partial").textContent=text});
@@ -91,8 +220,11 @@ $("go").onclick=async()=>{
     dict.onState(({state})=>{on=state==="listening";mic.classList.toggle("on",on);mic.setAttribute("aria-label",on?"Stop":"Talk");if(!on)$("partial").textContent=""});
     mic.onclick=()=>{if(on)dict.stop().catch(()=>{});else dict.start().catch(e=>{if(e&&e.code==="not_granted")mic.hidden=true})};
   }
-  if(!dbNs){say("Sign in on claude.ai to save your dumps.","err");return}
+  if(!dbNs){$("list").replaceChildren(el("p",{class:"empty",text:"Sign in on claude.ai to see your dumps."}));return}
   db=dbNs;
-  db.collection("dumps").where("sorted","==",false).onSnapshot(s=>{waiting=s.size;bank()},()=>{});
+  db.doc("settings/profile").get().then(s=>{if(s.exists)profile=s.data().text||""}).catch(()=>{});
+  const timer=setTimeout(()=>{if(!dumps.length)$("list").replaceChildren(el("p",{class:"empty",text:"Still loading. Check your connection."}))},10000);
+  db.collection("dumps").orderBy("createdAt","desc").onSnapshot(s=>{clearTimeout(timer);dumps=s.docs.map(d=>({id:d.id,...d.data()}));render()},
+    e=>{clearTimeout(timer);$("list").replaceChildren(el("p",{class:"empty",text:"Couldn't load your dumps: "+(e.message||e.code)}))});
 })();
 </script>
